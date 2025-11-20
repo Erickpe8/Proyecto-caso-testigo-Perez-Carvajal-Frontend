@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .task-item {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .priority-low { border-left: 4px solid #10b981; }
+        .priority-medium { border-left: 4px solid #3b82f6; }
+        .priority-high { border-left: 4px solid #f59e0b; }
+        .priority-urgent { border-left: 4px solid #ef4444; }
+        
+        .task-completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8 fade-in">
+            <h1 class="text-5xl font-bold text-slate-800 mb-2">📋 Task Manager Pro</h1>
+            <p class="text-slate-600">Organiza tu vida de manera inteligente</p>
+        </div>
+
+        <!-- Stats Dashboard -->
+        <div id="stats" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 fade-in">
+            <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition">
+                <div class="text-2xl font-bold text-slate-700" id="stat-total">0</div>
+                <div class="text-sm text-slate-500">Total</div>
+            </div>
+            <div class="bg-yellow-50 rounded-xl shadow-md p-4 text-center hover:shadow-lg transition">
+                <div class="text-2xl font-bold text-yellow-600" id="stat-pending">0</div>
+                <div class="text-sm text-yellow-700">Pendientes</div>
+            </div>
+            <div class="bg-blue-50 rounded-xl shadow-md p-4 text-center hover:shadow-lg transition">
+                <div class="text-2xl font-bold text-blue-600" id="stat-progress">0</div>
+                <div class="text-sm text-blue-700">En Progreso</div>
+            </div>
+            <div class="bg-green-50 rounded-xl shadow-md p-4 text-center hover:shadow-lg transition">
+                <div class="text-2xl font-bold text-green-600" id="stat-completed">0</div>
+                <div class="text-sm text-green-700">Completadas</div>
+            </div>
+            <div class="bg-red-50 rounded-xl shadow-md p-4 text-center hover:shadow-lg transition">
+                <div class="text-2xl font-bold text-red-600" id="stat-cancelled">0</div>
+                <div class="text-sm text-red-700">Canceladas</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Create Task Form -->
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6">✨ Nueva Tarea</h2>
+                    
+                    <form id="taskForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Título *</label>
+                            <input 
+                                type="text" 
+                                id="taskTitle" 
+                                required
+                                minlength="3"
+                                maxlength="200"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                placeholder="Ej: Completar proyecto..."
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Descripción</label>
+                            <textarea 
+                                id="taskDescription"
+                                maxlength="1000"
+                                rows="3"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition resize-none"
+                                placeholder="Detalles adicionales..."
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Prioridad</label>
+                            <select 
+                                id="taskPriority"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                            >
+                                <option value="1">🟢 Baja</option>
+                                <option value="2" selected>🔵 Media</option>
+                                <option value="3">🟠 Alta</option>
+                                <option value="4">🔴 Urgente</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha Límite</label>
+                            <input 
+                                type="date" 
+                                id="taskDueDate"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Etiquetas</label>
+                            <input 
+                                type="text" 
+                                id="taskTags"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                placeholder="trabajo, urgente, personal..."
+                            >
+                            <p class="text-xs text-slate-500 mt-1">Separadas por comas</p>
+                        </div>
+
+                        <button 
+                            type="submit"
+                            class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            ➕ Crear Tarea
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tasks List -->
+            <div class="md:col-span-2">
+                <!-- Filters -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <input 
+                                type="text" 
+                                id="searchInput"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                                placeholder="🔍 Buscar tareas..."
+                            >
+                        </div>
+                        <div>
+                            <select 
+                                id="filterStatus"
+                                class="w-full md:w-48 px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
+                            >
+                                <option value="">Todos los estados</option>
+                                <option value="PENDING">Pendientes</option>
+                                <option value="IN_PROGRESS">En Progreso</option>
+                                <option value="COMPLETED">Completadas</option>
+                                <option value="CANCELLED">Canceladas</option>
+                            </select>
+                        </div>
+                        <button 
+                            id="deleteAllBtn"
+                            class="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition shadow-md hover:shadow-lg"
+                        >
+                            🗑️ Eliminar Todas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div id="taskList" class="space-y-4">
+                    <!-- Tasks will be inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="bg-white rounded-2xl shadow-xl p-12 text-center hidden">
+                    <div class="text-6xl mb-4">📝</div>
+                    <h3 class="text-2xl font-bold text-slate-700 mb-2">No hay tareas</h3>
+                    <p class="text-slate-500">Crea tu primera tarea para comenzar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl hidden transform transition-all">
+        <p id="toastMessage"></p>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let tasks = [];
+        let searchTimeout = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTasks();
+            loadStats();
+            setupEventListeners();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            document.getElementById('taskForm').addEventListener('submit', handleCreateTask);
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            document.getElementById('filterStatus').addEventListener('change', handleFilter);
+            document.getElementById('deleteAllBtn').addEventListener('click', handleDeleteAll);
+        }
+
+        // API Calls
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    ...options,
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (!response.ok && response.status !== 204) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error en la petición');
+                }
+
+                if (response.status === 204) {
+                    return null;
+                }
+
+                return await response.json();
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        async function loadTasks(status = null) {
+            try {
+                const endpoint = status ? `/tasks?status=${status}` : '/tasks';
+                tasks = await apiCall(endpoint);
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const stats = await apiCall('/tasks/stats');
+                document.getElementById('stat-total').textContent = stats.total;
+                document.getElementById('stat-pending').textContent = stats.pending;
+                document.getElementById('stat-progress').textContent = stats.in_progress;
+                document.getElementById('stat-completed').textContent = stats.completed;
+                document.getElementById('stat-cancelled').textContent = stats.cancelled;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function handleCreateTask(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const priority = parseInt(document.getElementById('taskPriority').value);
+            const dueDate = document.getElementById('taskDueDate').value;
+            const tagsInput = document.getElementById('taskTags').value.trim();
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+
+            const taskData = {
+                title,
+                description: description || null,
+                priority,
+                due_date: dueDate || null,
+                tags
+            };
+
+            try {
+                await apiCall('/tasks', {
+                    method: 'POST',
+                    body: JSON.stringify(taskData)
+                });
+
+                document.getElementById('taskForm').reset();
+                await loadTasks();
+                await loadStats();
+                showToast('✅ Tarea creada exitosamente');
+            } catch (error) {
+                console.error('Error creating task:', error);
+            }
+        }
+
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                await apiCall(`/tasks/${taskId}/status?status=${newStatus}`, {
+                    method: 'PATCH'
+                });
+                await loadTasks();
+                await loadStats();
+                showToast('✅ Estado actualizado');
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        async function deleteTask(taskId) {
+            if (!confirm('¿Estás seguro de eliminar esta tarea?')) return;
+
+            try {
+                await apiCall(`/tasks/${taskId}`, {
+                    method: 'DELETE'
+                });
+                await loadTasks();
+                await loadStats();
+                showToast('✅ Tarea eliminada');
+            } catch (error) {
+                console.error('Error deleting task:', error);
+            }
+        }
+
+        async function handleDeleteAll() {
+            if (!confirm('¿Estás seguro de eliminar TODAS las tareas?')) return;
+
+            try {
+                await apiCall('/tasks', {
+                    method: 'DELETE'
+                });
+                await loadTasks();
+                await loadStats();
+                showToast('✅ Todas las tareas eliminadas');
+            } catch (error) {
+                console.error('Error deleting all tasks:', error);
+            }
+        }
+
+        function handleSearch(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                loadTasks();
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    tasks = await apiCall(`/tasks/search?q=${encodeURIComponent(query)}`);
+                    renderTasks(tasks);
+                } catch (error) {
+                    console.error('Error searching:', error);
+                }
+            }, 300);
+        }
+
+        function handleFilter(e) {
+            const status = e.target.value;
+            loadTasks(status || null);
+        }
+
+        // Render Functions
+        function renderTasks(tasksToRender) {
+            const container = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (tasksToRender.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            container.innerHTML = tasksToRender.map(task => {
+                const priorityClass = ['priority-low', 'priority-medium', 'priority-high', 'priority-urgent'][task.priority - 1];
+                const priorityEmoji = ['🟢', '🔵', '🟠', '🔴'][task.priority - 1];
+                const isCompleted = task.status === 'COMPLETED';
+                
+                return `
+                    <div class="task-item bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition ${priorityClass} ${isCompleted ? 'task-completed' : ''}">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-slate-800 mb-1">${escapeHtml(task.title)}</h3>
+                                ${task.description ? `<p class="text-slate-600 text-sm mb-3">${escapeHtml(task.description)}</p>` : ''}
+                            </div>
+                            <span class="text-2xl ml-2">${priorityEmoji}</span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(task.status)}">
+                                ${getStatusText(task.status)}
+                            </span>
+                            ${task.due_date ? `<span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">📅 ${formatDate(task.due_date)}</span>` : ''}
+                            ${task.tags.map(tag => `<span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold">#${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            ${task.status !== 'IN_PROGRESS' ? `
+                                <button onclick="updateTaskStatus('${task.id}', 'IN_PROGRESS')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-semibold">
+                                    ▶️ En Progreso
+                                </button>
+                            ` : ''}
+                            ${task.status !== 'COMPLETED' ? `
+                                <button onclick="updateTaskStatus('${task.id}', 'COMPLETED')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-semibold">
+                                    ✓ Completar
+                                </button>
+                            ` : ''}
+                            ${task.status !== 'CANCELLED' ? `
+                                <button onclick="updateTaskStatus('${task.id}', 'CANCELLED')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-semibold">
+                                    ⏸️ Cancelar
+                                </button>
+                            ` : ''}
+                            <button onclick="deleteTask('${task.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-semibold ml-auto">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
+                            Creada: ${formatDate(task.created_at)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Utility Functions
+        function getStatusBadgeClass(status) {
+            const classes = {
+                'PENDING': 'bg-yellow-100 text-yellow-700',
+                'IN_PROGRESS': 'bg-blue-100 text-blue-700',
+                'COMPLETED': 'bg-green-100 text-green-700',
+                'CANCELLED': 'bg-red-100 text-red-700'
+            };
+            return classes[status] || 'bg-slate-100 text-slate-700';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'PENDING': 'Pendiente',
+                'IN_PROGRESS': 'En Progreso',
+                'COMPLETED': 'Completada',
+                'CANCELLED': 'Cancelada'
+            };
+            return texts[status] || status;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
